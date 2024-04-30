@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>oliford</groupId>
+  <groupId>uk.co.oliford</groupId>
   <artifactId>jolufork</artifactId>
   <version>1.0.0</version>
   <build>
@@ -16,11 +16,34 @@
       </plugin>
     </plugins>
   </build>
-  <name>jolufork</name>
+  <name>${project.groupId}:${project.artifactId}</name>
   <url>https://github.com/oliford/jolufork/</url>
   <scm>
 		<connection>scm:git:ssh://git@github.com/oliford/${project.name}.git</connection>
     	<developerConnection>scm:git:ssh://git@github.com/oliford/${project.name}.git</developerConnection>    	
 		<url>https://github.com/oliford/${project.name}/tree/master</url>
 	</scm>
+	<distributionManagement>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Central Repository</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+
+	</distributionManagement>
+	<description>Fork of JavaOneLineUtils from Seed Minerva</description>
+	<licenses>
+  <license>
+    <name>MIT License</name>
+    <url>http://www.opensource.org/licenses/mit-license.php</url>
+  </license>
+</licenses>
+ <developers>
+    <developer>
+      <name>Oliver Ford</name>
+    </developer>
+  </developers>
 </project>
