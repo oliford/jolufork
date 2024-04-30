@@ -16,4 +16,11 @@
       </plugin>
     </plugins>
   </build>
+  <name>jolufork</name>
+  <url>https://github.com/oliford/jolufork/</url>
+  <scm>
+		<connection>scm:git:ssh://git@github.com/oliford/${project.name}.git</connection>
+    	<developerConnection>scm:git:ssh://git@github.com/oliford/${project.name}.git</developerConnection>    	
+		<url>https://github.com/oliford/${project.name}/tree/master</url>
+	</scm>
 </project>
