@@ -1,4 +1,4 @@
-package uk.co.oliford.jolufork;
+package uk.co.oliford.jolu;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
