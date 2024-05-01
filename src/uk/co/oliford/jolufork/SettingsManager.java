@@ -1,4 +1,4 @@
-package jolu;
+package uk.co.oliford.jolufork;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
