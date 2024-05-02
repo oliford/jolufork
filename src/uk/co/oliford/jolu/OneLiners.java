@@ -7336,4 +7336,27 @@ public class OneLiners {
 		return new double[][]{ {v1x, v1y}, { v2x, v2y}, {l1, l2 } };
 
 	}
+
+	/**
+	 * Multiply a matrix A with a vector b where c is the resulting vector:
+	 * c = A b
+	 *
+	 * @param a [n][m] matrix "A"
+	 * @param b [m] vector "b"
+	 * @return [n] result vector "c"
+	 */
+	public static double[] matrixMul(double[][] a, double[] b) {
+		int rows_a = a.length;
+		int cols_a = a[0].length;
+		double[] ret = new double[rows_a];
+		for (int i = 0; i < rows_a; ++i) {
+			double v = 0;
+			for (int k = 0; k < cols_a; ++k) {
+				v += a[i][k] * b[k];
+			}
+			ret[i] = v;
+		}
+
+		return ret;
+	}
 }

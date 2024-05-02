@@ -73,17 +73,7 @@
     	<developerConnection>scm:git:ssh://git@github.com/oliford/${project.name}.git</developerConnection>    	
 		<url>https://github.com/oliford/${project.name}/tree/master</url>
 	</scm>
-	<distributionManagement>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>central</id>
-      <name>Central Repository</name>
-      <url>https://repo.maven.apache.org/maven2</url>
-    </repository>
-
-	</distributionManagement>
+	
 	<description>Fork of JavaOneLineUtils from Seed Minerva</description>
 	<licenses>
   <license>
