@@ -1,0 +1,240 @@
+package uk.co.oliford.svg;
+
+import java.util.List;
+
+
+/** For writing SVG files to display (x,y), (x,z) and (y,z) projections of 3D lines/points 
+ * 
+ * (x,y)   (y,z)
+ * (x,z)   (proj??)
+ * */
+public class SVGSplitView3D {
+
+    SVGLineWriter svgXY, svgXZ, svgYZ, svgISO;
+
+    private final static double sq12 = Math.sqrt(1.0/2.0);
+    private final static double sq13 = Math.sqrt(1.0/3.0);
+    private final static double sq16 = Math.sqrt(1.0/6.0);
+    
+    private double rotMat[][] = null;
+    
+    private static final double[] isoProj(double x, double y, double z){
+        return new double[]{
+            sq12 * x - sq12 * y,
+            sq16 * x + sq16 * y + sq13 * z
+        };
+    }
+    
+    private static final double[][] isoProj(double x[], double y[], double z[]){
+        double ip[][] = new double[2][x.length];
+        for(int i=0; i < x.length; i++) {
+            ip[0][i] = sq12 * x[i] - sq12 * y[i];
+            ip[1][i] = sq16 * x[i] + sq16 * y[i] + sq13 * z[i];    
+        }
+        return ip;
+    }
+
+    /**
+     * @param fileNamePrefix "-xy.svg" etc is added.    
+     * @param bbox { x0, y0, z0, x1, y1, z1 }
+     */
+    public SVGSplitView3D(String fileNamePrefix, double[] bbox) {
+        this(fileNamePrefix, bbox, null);        
+    }
+    
+    /**
+     * @param fileName
+     * @param bbox { x0, y0, z0, x1, y1, z1 }
+     */
+    public SVGSplitView3D(String fileNamePrefix, double[] bbox, double rotMat[][]) {
+        this.rotMat = rotMat;
+        if(rotMat != null)
+            bbox = rotateBBox(rotMat, bbox);
+        
+        svgXY = new SVGLineWriter(fileNamePrefix + "-xy.svg", new double[]{ bbox[0], bbox[1], bbox[3], bbox[4] });
+        svgXZ = new SVGLineWriter(fileNamePrefix + "-xz.svg", new double[]{ bbox[0], bbox[2], bbox[3], bbox[5] });
+        svgYZ = new SVGLineWriter(fileNamePrefix + "-yz.svg", new double[]{ bbox[1], bbox[2], bbox[4], bbox[5] });
+        
+        double bot[] = isoProj(bbox[0], bbox[1], bbox[2]);
+        double top[] = isoProj(bbox[3], bbox[4], bbox[5]);
+        double topLeft[] = isoProj(bbox[0], bbox[4], bbox[5]);
+        double topRight[] = isoProj(bbox[3], bbox[1], bbox[5]);        
+        svgISO = new SVGLineWriter(fileNamePrefix + "-iso.svg", new double[]{ topLeft[0], bot[1], topRight[0], top[1] });
+        
+
+    }
+
+    /** Find a bounding box in the rotated coords, enclosing the original box */
+    public static double[] rotateBBox(double rot[][], double bbox[]){
+        double corners[][] = new double[][]{ 
+                { bbox[0], bbox[1], bbox[2] }, 
+                { bbox[0], bbox[1], bbox[5] }, 
+                { bbox[0], bbox[4], bbox[2] }, 
+                { bbox[0], bbox[4], bbox[5] }, 
+                { bbox[3], bbox[1], bbox[2] }, 
+                { bbox[3], bbox[1], bbox[5] }, 
+                { bbox[3], bbox[4], bbox[2] }, 
+                { bbox[3], bbox[4], bbox[5] }, 
+                };
+        double ret[] = new double[6];
+        for(int i=0; i < 6; i++){
+            double a = rot[0][0] * corners[i][0] +  rot[0][1] * corners[i][1] + rot[0][2] * corners[i][2];
+            double b = rot[1][0] * corners[i][0] +  rot[1][1] * corners[i][1] + rot[1][2] * corners[i][2];
+            double c = rot[2][0] * corners[i][0] +  rot[2][1] * corners[i][1] + rot[2][2] * corners[i][2];
+            ret[0] = Math.min(ret[0], a);
+            ret[1] = Math.min(ret[1], b);
+            ret[2] = Math.min(ret[2], c);
+            ret[3] = Math.max(ret[3], a);
+            ret[4] = Math.max(ret[4], b);
+            ret[5] = Math.max(ret[5], c);
+        }
+        return ret;
+    }
+    
+    public void addLineStyle(String name, String fill, double strokeWidth, String strokeColour){
+        svgXY.addLineStyle(name, fill, strokeWidth, strokeColour);
+        svgXZ.addLineStyle(name, fill, strokeWidth, strokeColour);
+        svgYZ.addLineStyle(name, fill, strokeWidth, strokeColour);
+        svgISO.addLineStyle(name, fill, strokeWidth, strokeColour);        
+    }
+  
+    public void addLine(double[] x, double[] y, double z[]) {
+        addLine(x, y, z, "deflt");
+    }
+    
+    public void addLine(double posXYZ[][]) {
+        addLine(posXYZ[0], posXYZ[1], posXYZ[2], "deflt");
+    }
+    
+    public void addLine(double posXYZ[][], String style) {
+        addLine(posXYZ[0], posXYZ[1], posXYZ[2], style);
+    }
+    
+    public void addLine(double[] x, double[] y, double z[], String style) {
+        
+        if(rotMat != null){
+            double a[] = new double[x.length];
+            double b[] = new double[x.length];
+            double c[] = new double[x.length];
+            for(int i=0; i < x.length; i++){
+                a[i] = rotMat[0][0] * x[i] +  rotMat[0][1] * y[i] + rotMat[0][2] * z[i];
+                b[i] = rotMat[1][0] * x[i] +  rotMat[1][1] * y[i] + rotMat[1][2] * z[i];
+                c[i] = rotMat[2][0] * x[i] +  rotMat[2][1] * y[i] + rotMat[2][2] * z[i];
+            }
+            x=a; y=b; z=c;
+        }
+        
+        svgXY.addLine(x, y, style);
+        svgXZ.addLine(x, z, style);
+        svgYZ.addLine(y, z, style);
+        double ip[][] = isoProj(x, y, x);
+        svgISO.addLine(ip[0], ip[1], style);
+    }
+    
+    public void addLine(List<double[]> posXYZ) {
+        addLine(posXYZ, "deflt");
+    }
+    
+    public void addLines(List<double[][]> lines, String style) {
+        for(double line[][] : lines)
+            addLine(line[0], line[1], line[2], style);
+    }
+        
+    public void addLine(List<double[]> posXYZ, String style) {
+        double x[] = new double[posXYZ.size()];
+        double y[] = new double[posXYZ.size()];
+        double z[] = new double[posXYZ.size()];
+        
+        for(int i=0; i < posXYZ.size(); i++){
+            double p[] = posXYZ.get(i);
+            x[i] = p[0];
+            y[i] = p[1];
+            z[i] = p[2];
+        }
+        
+        addLine(x, y, z, style);
+    }
+    
+    public void destroy(){
+        svgXY.destroy();
+        svgXZ.destroy();
+        svgYZ.destroy();
+        svgISO.destroy();
+    }
+		
+    public static void arrayToSVG(String fileName, double lines[][][]) {
+        double bbox[] = new double[]{ 
+            Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+            Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY
+        };
+        
+        /* Find the min/max in both directions */
+        for(int i=0; i < lines.length; i++)
+            for(int j=0; j < lines[i][0].length; j++){
+                if( lines[i][0][j] < bbox[0] ) bbox[0] = lines[i][0][j];
+                if( lines[i][1][j] < bbox[1] ) bbox[1] = lines[i][1][j];
+                if( lines[i][1][j] < bbox[2] ) bbox[2] = lines[i][2][j];
+                
+                if( lines[i][0][j] > bbox[3] ) bbox[3] = lines[i][0][j];
+                if( lines[i][1][j] > bbox[4] ) bbox[4] = lines[i][1][j];
+                if( lines[i][1][j] > bbox[5] ) bbox[5] = lines[i][2][j];
+            }
+        
+        SVGSplitView3D svg = new SVGSplitView3D(fileName, bbox);
+                
+        for(int i=0; i < lines.length; i++)
+            svg.addLine(lines[i][0], lines[i][1], lines[i][2]);
+        
+        svg.destroy();
+        
+    }
+    
+    public void startGroup(String name){
+        svgXY.startGroup(name);
+        svgXZ.startGroup(name);
+        svgYZ.startGroup(name);
+        svgISO.startGroup(name);
+    }
+    
+    public void endGroup(){
+        svgXY.endGroup();
+        svgXZ.endGroup();
+        svgYZ.endGroup();
+        svgISO.endGroup();
+    }
+    
+    public static void main(String[] args) {
+        SVGSplitView3D svg = new SVGSplitView3D("/tmp/3d", new double[]{ 0, 0, 0, 4, 4, 4 } );
+        
+        svg.addLine(new double[]{ 1, 2, 3, 1} , new double[]{ 1, 2, 1.5, 3}, new double[]{ 1, 4, 2, 1 });
+        
+        svg.destroy();
+    }
+
+    public void addSphere(double[] pos, double r) { addSphere(pos, r, "deflt"); }
+        
+    public void addSphere(double[] pos, double r, String style) {
+        svgXY.addCircle(pos[0], pos[1], r, style);
+        svgXZ.addCircle(pos[0], pos[2], r, style);
+        svgYZ.addCircle(pos[1], pos[2], r, style);
+        double ip[] = isoProj(pos[0], pos[1], pos[2]);
+        svgISO.addCircle(ip[0], ip[1], r, style);
+    }
+    
+    public void addSpheres(double[][] pos, double r) { addSpheres(pos, r, "deflt"); }
+            
+    public void addSpheres(double[][] pos, double r, String style) {
+        svgXY.addCircles(pos[0], pos[1], r, style);
+        svgXZ.addCircles(pos[0], pos[2], r, style);
+        svgYZ.addCircles(pos[1], pos[2], r, style);
+        double ip[][] = isoProj(pos[0], pos[1], pos[2]);
+        svgISO.addCircles(ip[0], ip[1], r, style);
+    }
+    
+    public void setPrecision(int precision) {
+        svgXY.setPrecision(precision);
+        svgXZ.setPrecision(precision);
+        svgYZ.setPrecision(precision);
+        svgISO.setPrecision(precision);
+    }
+}

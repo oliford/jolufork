@@ -1,0 +1,68 @@
+Some notes for a new minerva-wide general caching system. Mostly just me thinking.
+
+We'll try to keep it as general as possible but this is really for the new mags (MagneticConfigurationNode based) so I'll use that for examples. 
+
+Everything cached is keyed primarily by a configuration (e.g. the BeamSet) and then keyed within that by request (e.g. list of positions for B or A).
+
+The positions which are requests are linked by something the user knows about and may want to select by later (e.g. 'I'm using a 60x60 psi grid today')
+But there's no way you can stop that getting mixed up with new coils etc coming only.
+
+So the 'user info' should probably only be a tag, for filtering and separating things later.
+
+The outer 'config set' keys need to definitely be in a simple text file so users can transfer things from one place to another.
+Sets probably should be identified on disk by random number of text string, rather than a serial as that got confusing between Nervous and Ethics last time.
+
+There should be a facility to tag any requests that are used during a run, and/or write a new cache set on the fly, copying from the existing cache as you go.
+
+Caching totally kills the VMs ability to memory manage so we may need the option of holding the index of a loaded set and cycling individual requests on and off disk.
+However, individual requests are too small to keep on disk.
+
+To avoid a whole internal memory manager, can we use weak references? let the VM handle it?
+       
+By the way... Object serialization isn't actually much slower than doing it manually, so we should still use that, to some extent.
+
+Should definitely use NIO for the random access of the cache file. Keep it r/w and seek as you go.
+That causes network problems of course.
+
+If the caching had some general interface, we could gi..... oooooooh..... I have an idea...
+With the cache as a general Minerva environment level service, the cluster can replace the whole thing
+with one which communicates with the master. Requests can be handled one at a time (as they are use to the transit level of the cluster anyway)
+and can be forwarding distributed to anyone waiting. This needs some work, but having the infrastructure there now would avoid
+needing to do all that cache copying later.
+
+Also, if I give it a general interface at every level, the inner set (of each primary key) can be either a standard 'all into memory' and write back cache
+or a 'run live from disk' cache. Although, tbh, maybe we should always run from disk and trust the OS to handle the disk cache sensibly?
+Answer: Write the disk one first and see how it handles it.
+
+
+Hmmmm, by the way, this shouldn't be in MagneticConfigurationNode, it should be a proxy layer of the Magnetostatics runtime, like we do with xbase.
+This should be handled by the new ServiceManager and then they all require the general caching base, also in the service manager.
+
+If I fix the service architecture now, I can do that without the current weird project arrangement getting in the way. 
+
+Does DataSignals fit into this? no, probably not because of the data quantity.  
+
+So, text based main index:
+Cache type:   'magnetostatics' 'xbase' etc
+Primary key: 
+	beamset, pfCoils etc. 
+	This probably needs a text strings along a more secure identifier. 
+	e.g. PFcoils are fine with just their model identity but maybe then we checksum the model itself??
+	Plasma beams have a simple identifier but need definitely to be deepEqual'ed against the actual beamset as before.
+	
+	xbase has no primary key!!
+	
+	last accessed and last modified would probably we useful here, as well as the ability for the user
+	to write protect the cache entry from the text file
+	
+Request key:
+	There will be lots of these under each primary key so text is not an options.
+	Also, the key'ing is by class so it must be binary.
+	
+	Tags go in here, but are only for information/filtering later on.
+	
+	 hmm, so there is another index level?
+	 is that right?
+	 
+	 ...errr... ok, i'll come back to this
+  

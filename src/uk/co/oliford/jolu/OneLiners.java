@@ -973,9 +973,7 @@ public class OneLiners {
     /**
      *
      * @param dirName
-     * @deprecated See {@link #mkdir(String)}
      */
-    @Deprecated(forRemoval = true, since = "1.5.0")
     public static final void makeDir(String dirName) {
         mkdir(dirName);
     }
@@ -983,9 +981,7 @@ public class OneLiners {
     /**
      * Create the given directories, if not already existent.
      * @param dirs the directories to make
-     * @deprecated Please use {@link #mkdir(String)}
      */
-    @Deprecated(forRemoval = true, since = "1.5.0")
     public static final void makeDir(String... dirs) {
         for (int i = 0; i < dirs.length; i++) {
             mkdir(dirs[i]);
@@ -995,17 +991,12 @@ public class OneLiners {
     /**
      *
      * @param dirName
-     * @deprecated See {@link #mkdir(Path)}
      */
-    @Deprecated(forRemoval = true, since = "1.5.0")
     public static final void makeDir(Path dirName) {
         mkdir(dirName);
     }
 
-    /** Makes the dirs in the path ready for the given file
-     * @deprecated See {@link #mkdir(String)}
-     * */
-    @Deprecated(forRemoval = true, since = "1.5.0")
+    /** Makes the dirs in the path ready for the given file */
     public static final void makePath(String fileName){
         File file = new File(fileName);
 
@@ -1066,9 +1057,7 @@ public class OneLiners {
     }
 
     /** Makes the dirs in the path ready for the given file
-     * @deprecated See {@link #mkdir(Path)}
      * */
-    @Deprecated(forRemoval = true, since = "1.5.0")
     public static final void makePath(Path fileName) {
         File file = fileName.toFile();
 
@@ -1254,11 +1243,6 @@ public class OneLiners {
         return ret;
     }
 
-    @Deprecated(forRemoval = true, since = "1.5.0")
-    public static final int doubleToInt(double a) {
-        return (int) a; // that is nonsense, just cast it
-    }
-
     public static final int[] doubleToInt(double[] a) {
         return DoubleStream.of(a).mapToInt(i -> (int) i).toArray();
     }
@@ -1269,11 +1253,6 @@ public class OneLiners {
 
     public static final int[][][] doubleToInt(double[][][] a) {
         return Stream.of(a).map(OneLiners::doubleToInt).toArray(int[][][]::new);
-    }
-
-    @Deprecated(forRemoval = true, since = "1.5.0")
-    public static final double intToDouble(int a) {
-        return a; // that is nonsense, automatic widening will do it anyway
     }
 
     public static final double[] intToDouble(int[] a) {
@@ -1319,12 +1298,7 @@ public class OneLiners {
         return ret;
     }
 
-    /** @deprecated This is nonsense, shorts can be widened automatically to doubles */
-    @Deprecated(forRemoval = true, since = "1.5.0")
-    public static final double shortToDouble(short a) {
-        return a;
-    }
-
+   
     public static final double[] shortToDouble(short[] a) {
         double[] ret = new double[a.length];
         for (int i = 0; i < ret.length; ++i) {
@@ -2784,42 +2758,6 @@ public class OneLiners {
     }
 
     /**
-     * Takes the specified subsection of the given array an puts it in a new array of length n
-     * @param value The array to take n elements from
-     * @param n The array size.
-     * @return The allocated array.
-     * @deprecated Use {@link Arrays#copyOfRange(boolean[], int, int)}
-     */
-    @Deprecated(forRemoval = true, since = "1.5.0")
-    public static final boolean[] subArray(boolean[] in, int i0, int n) {
-        return Arrays.copyOfRange(in, i0, i0+n);
-    }
-
-    /**
-     * Takes the specified subsection of the given array an puts it in a new array of length n
-     * @param value The array to take n elements from
-     * @param n The array size.
-     * @return The allocated array.
-     * @deprecated Use {@link Arrays#copyOfRange(boolean[], int, int)}
-     */
-    @Deprecated(forRemoval = true, since = "1.5.0")
-    public static final short[] subArray(short[] in, int i0, int n) {
-        return Arrays.copyOfRange(in, i0, i0+n);
-    }
-
-    /**
-     * Takes the specified subsection of the given array an puts it in a new array of length n
-     * @param value The array to take n elements from
-     * @param n The array size.
-     * @return The allocated array.
-     * @deprecated Use {@link Arrays#copyOfRange(boolean[], int, int)}
-     */
-    @Deprecated(forRemoval = true, since = "1.5.0")
-    public static final double[] subArray(double[] in, int i0, int n) {
-        return Arrays.copyOfRange(in, i0, i0+n);
-    }
-
-    /**
      * Extracts in[startRow:startRow+numRows][startCol:startCol+numCols] from given input array
      * @param in input array, must be >= [startRow+numRows][startCol+numCols]
      * @param startRow starting value for first index
@@ -3319,18 +3257,6 @@ public class OneLiners {
         }
 
         return ret;
-    }
-
-    /**
-     * Flattens a list containing arrays.
-     *
-     * @param <T>  the type of the arrays that the list contains
-     * @param list the list to flatten
-     * @return the flattened list
-     */
-    public static final <T> List<T> flatten(List<T[]> list) {
-        Objects.requireNonNull(list);
-        return list.stream().flatMap(Arrays::stream).toList();
     }
 
     /**
@@ -4901,40 +4827,6 @@ public class OneLiners {
         return Array.newInstance(elementType, fillArray(0, dimension)).getClass();
     }
 
-    /**
-     * Converts e.g. [J to long[]. Furthermore, DataTable$Bla gets converted to Bla.
-     *
-     * @param str the Java type name
-     * @return the human readable type name
-     */
-    public static final String simpleTypeName(String str) {
-        int dim = (int) str.chars().filter(c -> c == '[').count();
-
-        // no anonymous things
-        String[] nonAnonymous = str.split("\\$");
-
-        String ret = nonAnonymous[nonAnonymous.length - 1].replace("[", "").replace(";", "");
-        if      ("B".equals(ret)) ret = "byte";
-        else if ("C".equals(ret)) ret = "char";
-        else if ("D".equals(ret)) ret = "double";
-        else if ("F".equals(ret)) ret = "float";
-        else if ("I".equals(ret)) ret = "int";
-        else if ("J".equals(ret)) ret = "long";
-        else if ("S".equals(ret)) ret = "short";
-        else if ("Z".equals(ret)) ret = "boolean";
-        else if (dim > 0
-                && !"byte".equals(ret)
-                && !"char".equals(ret)
-                && !"double".equals(ret)
-                && !"float".equals(ret)
-                && !"int".equals(ret)
-                && !"long".equals(ret)
-                && !"short".equals(ret)
-                && !"boolean".equals(ret))
-            ret = ret.substring(1);
-
-        return ret + "[]".repeat(dim);
-    }
 
     /** Sets a given element of an nD array */
     public static void setArrayElement(Object array, Object element, int... indices) {
@@ -7409,4 +7301,39 @@ public class OneLiners {
 
         return file.getName().matches(".*(?<version>-\\d+\\.\\d+\\.\\d"+regexExtension+")");
     }
+
+	/** @return double[]{ evec1[], evec2[], {eval1, eval2 } }
+	 *
+	 * */
+	public static final double[][] eigenVecsAndVals2x2(double[][] A){
+		double T = A[0][0] + A[1][1];
+		double D = A[0][0]*A[1][1] - A[0][1]*A[1][0];
+
+		double rt = Math.sqrt(T*T/4 - D);
+		double l1 = T/2 + rt;
+		double l2 = T/2 - rt;
+
+		double v1x, v1y, v2x, v2y;
+		if(A[1][0] == 0){
+			if(A[0][1] == 0){
+				v1x = 1; v1y = 0; l1 = A[0][0];
+				v2x = 0; v2y = 1; l2 = A[1][1];
+			}else{
+				v1x = Math.sqrt(A[0][1]*A[0][1] / ((A[0][0] - l1)*(A[0][0] - l1) + A[0][1]*A[0][1]));
+				v1y = (l1 - A[0][0])*v1x / A[0][1];
+
+				v2x = Math.sqrt(A[0][1]*A[0][1] / ((A[0][0] - l2)*(A[0][0] - l2) + A[0][1]*A[0][1]));
+				v2y = (l2 - A[0][0])*v2x / A[0][1];
+			}
+		}else{
+			v1y = Math.sqrt(A[1][0]*A[1][0] / ((l1 - A[1][1])*(l1 - A[1][1]) + A[1][0]*A[1][0]));
+			v1x = (l1 - A[1][1])*v1y / A[1][0];
+
+			v2y = Math.sqrt(A[1][0]*A[1][0] / ((l2 - A[1][1])*(l2 - A[1][1]) + A[1][0]*A[1][0]));
+			v2x = (l2 - A[1][1])*v2y / A[1][0];
+		}
+
+		return new double[][]{ {v1x, v1y}, { v2x, v2y}, {l1, l2 } };
+
+	}
 }
